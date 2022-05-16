@@ -1,0 +1,43 @@
+version: "3.9"
+services:
+  api.nginx.dev:
+    container_name: api.nginx.dev
+    image: nginx:1.20
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - bubble
+    depends_on:
+      - app.shared-notepad.dev
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+
+  app.php.dev:
+    container_name: app.php.dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www
+      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - bubble
+
+  db.mongo.dev:
+    container_name: db.mongo.dev
+    image: mongo
+    restart: unless-stopped
+    ports:
+      - "27020:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - bubble
+
+networks:
+  bubble:
+    external: true
